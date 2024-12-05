@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCartStore } from '~/data';
-import './CheckoutReturn.scss';
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import { useCartStore } from "~/hooks";
+import "./CheckoutReturn.scss";
 
 export const CheckoutReturn = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export const CheckoutReturn = () => {
     <div className="CheckoutReturn">
       <h2>Order Successful!</h2>
       <p>Your order has been received! A confirmation email will be sent to your email address.</p>
-      <button className="CheckoutReturn__button" onClick={() => navigate('/')}>
+      <button className="CheckoutReturn__button" onClick={() => navigate("/")}>
         Continue shopping
       </button>
     </div>

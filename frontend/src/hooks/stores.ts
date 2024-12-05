@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Artwork, User, UserModel } from "~/api";
+import { Artwork, http, uninterceptedInstance, User, UserModel } from "~/api";
 
 type CartStore = {
   cart: Artwork[];
@@ -22,18 +22,16 @@ type AuthStore = {
   user: User | null;
   setUser: (user: User | null) => void;
   getUser: () => Promise<void>;
+  logout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   setUser: (user: User | null) => set({ user }),
-  getUser: async () => {
-    try {
-      const response = await UserModel.listAction("me", "get");
-      set({ user: response.data });
-    } catch {
-      console.error("Failed to get user");
-      set({ user: null });
-    }
-  },
+  getUser: () =>
+    http
+      .get("/api/me/")
+      .then((response) => set({ user: response.data }))
+      .catch(() => set({ user: null })),
+  logout: () => uninterceptedInstance.post("/api/logout/").then(() => set({ user: null })),
 }));

@@ -1,8 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import qs from "qs";
-import { useToast } from "~/data/toast";
-
-const toaster = useToast();
+import { useToast } from "~/hooks";
 
 // Primary Axios instance
 
@@ -15,6 +13,13 @@ export const http = axios.create({
   paramsSerializer: (params) => {
     return qs.stringify(params, { arrayFormat: "repeat" });
   },
+});
+
+// Alternate Axios instances
+
+export const uninterceptedInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_HOST,
+  withCredentials: true,
 });
 
 // Automatically attempt access token refresh
@@ -33,47 +38,48 @@ const processQueue = (error: any = null) => {
   failedQueue = [];
 };
 
-const refreshInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_HOST,
-  withCredentials: true,
-});
+const clearAuthCookies = () => {
+  return uninterceptedInstance.post("/api/logout/");
+};
 
 http.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig;
 
-    if (error.response?.status !== 401 || originalRequest.url === "/api/token/refresh/") {
-      return Promise.reject(error);
-    }
+    if (
+      error.response?.status === 401 &&
+      (error.response?.data as any)?.code !== "token_missing" &&
+      originalRequest.url !== "/api/token/refresh/"
+    ) {
+      if (!isRefreshing) {
+        isRefreshing = true;
 
-    if (!isRefreshing) {
-      isRefreshing = true;
-
-      try {
-        await refreshInstance.post("/api/token/refresh/");
-        isRefreshing = false;
-        processQueue();
-        return http(originalRequest);
-      } catch (refreshError) {
-        isRefreshing = false;
-        processQueue(refreshError);
-        console.error("Failed to refresh access token, please login again");
-        toaster.error("Authentication error, please log in again");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
+        try {
+          await uninterceptedInstance.post("/api/token/refresh/");
+          isRefreshing = false;
+          processQueue();
+          return http(originalRequest);
+        } catch (refreshError) {
+          isRefreshing = false;
+          processQueue(refreshError);
+          await clearAuthCookies();
+          window.location.href = "/login";
+          return Promise.reject(refreshError);
+        }
       }
-    }
 
-    return new Promise((resolve, reject) => {
-      failedQueue.push({ resolve, reject });
-    })
-      .then(() => {
-        return http(originalRequest);
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
       })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
+        .then(() => {
+          return http(originalRequest);
+        })
+        .catch((err) => {
+          return Promise.reject(err);
+        });
+    }
+    return Promise.reject(error);
   }
 );
 

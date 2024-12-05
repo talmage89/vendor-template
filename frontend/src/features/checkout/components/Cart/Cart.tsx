@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { useCartStore } from '~/data';
-import { CheckoutFooter } from '..';
-import './Cart.scss';
+import { useNavigate } from "react-router-dom";
+import { useCartStore } from "~/hooks";
+import { CheckoutFooter } from "..";
+import "./Cart.scss";
 
 type CartProps = {
   onProceed: () => void;
@@ -12,9 +12,9 @@ export const Cart = (props: CartProps) => {
   const { cart, removeFromCart } = useCartStore();
 
   function centsToDollars(cents: number) {
-    return Number(cents / 100).toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return Number(cents / 100).toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
     });
   }
 
@@ -53,11 +53,7 @@ export const Cart = (props: CartProps) => {
           ))
         )}
       </div>
-      <CheckoutFooter
-        text="Proceed to Checkout"
-        onClick={props.onProceed}
-        disabled={cart.length === 0}
-      />
+      <CheckoutFooter text="Proceed to Checkout" onClick={props.onProceed} disabled={cart.length === 0} />
     </div>
   );
 };

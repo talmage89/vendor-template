@@ -1,5 +1,5 @@
-import { useCartStore } from '~/data';
-import './CheckoutFooter.scss';
+import { useCartStore } from "~/hooks";
+import "./CheckoutFooter.scss";
 
 type CheckoutFooterProps = {
   text: string;
@@ -12,9 +12,9 @@ export const CheckoutFooter = (props: CheckoutFooterProps) => {
   const { cart } = useCartStore();
 
   function centsToDollars(cents: number) {
-    return Number(cents / 100).toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return Number(cents / 100).toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
     });
   }
 
@@ -27,7 +27,7 @@ export const CheckoutFooter = (props: CheckoutFooterProps) => {
         </p>
       </span>
       <button className="CheckoutFooter__checkout" disabled={props.disabled} onClick={props.onClick}>
-        {props.loading ? 'Loading...' : props.text}
+        {props.loading ? "Loading..." : props.text}
       </button>
     </div>
   );
