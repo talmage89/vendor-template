@@ -3,6 +3,7 @@ venv
 .pytest_cache
 db.sqlite3
 TODO.md
+.env
 
 ### Python template
 # Byte-compiled / optimized / DLL files
