@@ -1,0 +1,20 @@
+@use 'src/scss/variables.scss' as *;
+@use 'src/scss/mixins.scss' as *;
+@use 'src/scss/utils.scss' as *;
+
+* {
+  margin: unset;
+  color: $gray-dark;
+}
+
+html {
+  @include montserrat;
+  margin: unset;
+  padding: unset;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  padding: unset;
+}
