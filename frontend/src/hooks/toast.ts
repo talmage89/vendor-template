@@ -2,7 +2,16 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export const useToast = () => {
-  const showInfo = (message: string) => {
+  const success = (message: string) => {
+    toast.success(message, {
+      position: "bottom-center",
+      autoClose: 3000,
+      hideProgressBar: true,
+      closeOnClick: true,
+    });
+  };
+
+  const info = (message: string) => {
     toast.info(message, {
       position: "bottom-center",
       autoClose: 3000,
@@ -11,7 +20,7 @@ export const useToast = () => {
     });
   };
 
-  const showError = (message: string) => {
+  const error = (message: string) => {
     toast.error(message, {
       position: "bottom-center",
       autoClose: 5000,
@@ -20,8 +29,5 @@ export const useToast = () => {
     });
   };
 
-  return {
-    info: showInfo,
-    error: showError,
-  };
+  return { success, info, error };
 };

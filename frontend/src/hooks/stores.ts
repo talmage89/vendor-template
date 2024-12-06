@@ -30,8 +30,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   setUser: (user: User | null) => set({ user }),
   getUser: () =>
     http
-      .get("/api/me/")
+      .get("/api/auth/me/")
       .then((response) => set({ user: response.data }))
       .catch(() => set({ user: null })),
-  logout: () => uninterceptedInstance.post("/api/logout/").then(() => set({ user: null })),
+  logout: () => uninterceptedInstance.post("/api/auth/logout/").then(() => set({ user: null })),
 }));

@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { Login, Signup } from "~/features/core";
+import { Login, ResetPassword, Signup, VerifyEmail } from "~/features/core";
 
 export const unauthenticatedRoutes = [
   {
@@ -13,5 +13,13 @@ export const unauthenticatedRoutes = [
   {
     path: "/signup",
     element: <Signup />,
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmail />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
 ];

@@ -1,15 +1,15 @@
 import * as React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, User, X } from "lucide-react";
+import { Menu, User, X, LogOut } from "lucide-react";
+import { Popover } from "~/components";
 import { useAuthStore, useCartStore } from "~/hooks";
 import "./Navbar.scss";
-import { Popover } from "~/ui";
 
 export const Navbar = () => {
-  const [menuOpen, setMenuOpen] = React.useState(false);
-
   const { cart } = useCartStore();
   const { user, logout } = useAuthStore();
+
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 720px)");
@@ -34,7 +34,10 @@ export const Navbar = () => {
           }
         >
           <div className="Navbar__avatar__menu">
-            <button onClick={() => logout()}>Logout</button>
+            <button onClick={() => logout()}>
+              <p>Log out</p>
+              <LogOut />
+            </button>
           </div>
         </Popover>
       );

@@ -1,6 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import qs from "qs";
-import { useToast } from "~/hooks";
 
 // Primary Axios instance
 
@@ -39,7 +38,7 @@ const processQueue = (error: any = null) => {
 };
 
 const clearAuthCookies = () => {
-  return uninterceptedInstance.post("/api/logout/");
+  return uninterceptedInstance.post("/api/auth/logout/");
 };
 
 http.interceptors.response.use(
@@ -49,14 +48,14 @@ http.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
-      (error.response?.data as any)?.code !== "token_missing" &&
-      originalRequest.url !== "/api/token/refresh/"
+      (error.response?.data as any)?.code !== "tokens_missing" &&
+      originalRequest.url !== "/api/auth/token-refresh/"
     ) {
       if (!isRefreshing) {
         isRefreshing = true;
 
         try {
-          await uninterceptedInstance.post("/api/token/refresh/");
+          await uninterceptedInstance.post("/api/auth/token-refresh/");
           isRefreshing = false;
           processQueue();
           return http(originalRequest);
@@ -64,7 +63,6 @@ http.interceptors.response.use(
           isRefreshing = false;
           processQueue(refreshError);
           await clearAuthCookies();
-          window.location.href = "/login";
           return Promise.reject(refreshError);
         }
       }
