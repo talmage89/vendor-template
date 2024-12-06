@@ -1,0 +1,17 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+    <h2>Account Already Exists</h2>
+    <p>Hi there,</p>
+    <p>We noticed you tried to create an account, but an account with this email already exists.</p>
+    <p>You can:</p>
+    <ul>
+        <li>
+            <a href="{{ login_url }}">Log in to your existing account</a>
+        </li>
+        <li>
+            <a href="{{ reset_password_url }}">Reset your password if you forgot it</a>
+        </li>
+    </ul>
+    <p>If you didn't try to create an account, you can safely ignore this email.</p>
+    <p>Need help? Contact our support team.</p>
+{% endblock %}

@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -41,7 +42,12 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(max_length=255, unique=True, blank=False, null=False)
+    email = models.EmailField(
+        max_length=255,
+        unique=True,
+        blank=False,
+        null=False,
+    )
     first_name = models.CharField(
         _("first name"),
         max_length=30,
@@ -55,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
-        help_text=_("Designates whether the user can log into " "this admin site."),
+        help_text=_("Designates whether the user can log into this admin site."),
     )
     is_active = models.BooleanField(
         _("active"),
@@ -69,6 +75,33 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(
         _("date joined"),
         default=timezone.now,
+    )
+
+    is_email_verified = models.BooleanField(
+        _("email verified"),
+        default=False,
+    )
+    email_verification_token = models.CharField(
+        _("email verification token"),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+    email_verification_token_created_at = models.DateTimeField(
+        _("email verification token created at"),
+        blank=True,
+        null=True,
+    )
+    password_reset_token = models.CharField(
+        _("password reset token"),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+    password_reset_token_created_at = models.DateTimeField(
+        _("password reset token created at"),
+        blank=True,
+        null=True,
     )
 
     USERNAME_FIELD = "email"
