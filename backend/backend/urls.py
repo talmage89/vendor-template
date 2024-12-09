@@ -3,9 +3,17 @@ from django.urls import path, include
 from rest_framework import routers
 
 from apps.accounts.views import UserView
+from apps.products.views import (
+    ShirtTypeViewSet,
+    ShirtViewSet,
+    ProductImageViewSet,
+)
 
 router = routers.DefaultRouter()
 router.register(r"users", UserView, basename="users")
+router.register(r"shirt-types", ShirtTypeViewSet, basename="shirt-types")
+router.register(r"shirts", ShirtViewSet, basename="shirts")
+router.register(r"product-images", ProductImageViewSet, basename="product-images")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

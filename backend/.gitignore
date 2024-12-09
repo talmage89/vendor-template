@@ -4,6 +4,7 @@ venv
 db.sqlite3
 TODO.md
 .env
+media/
 
 ### Python template
 # Byte-compiled / optimized / DLL files
