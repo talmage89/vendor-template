@@ -23,7 +23,9 @@ export const CheckoutFooter = (props: CheckoutFooterProps) => {
       <span className="CheckoutFooter__subtotal">
         <p className="CheckoutFooter__subtotal__label">Subtotal:</p>
         <p className="CheckoutFooter__subtotal__amount">
-          {centsToDollars(cart.reduce((acc, item) => acc + item.price_cents, 0))}
+          {centsToDollars(
+            cart.reduce((acc, item) => acc + item.clothing.final_price_cents * item.quantity, 0)
+          )}
         </p>
       </span>
       <button className="CheckoutFooter__checkout" disabled={props.disabled} onClick={props.onClick}>

@@ -1,6 +1,6 @@
-@use 'src/scss/animations.scss' as *;
-@use 'src/scss/mixins.scss' as *;
-@use 'src/scss/variables.scss' as *;
+@use "src/scss/animations.scss" as *;
+@use "src/scss/mixins.scss" as *;
+@use "src/scss/variables.scss" as *;
 
 .Cart {
   flex-grow: 1;
@@ -42,6 +42,7 @@
     }
 
     &__details {
+      flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -57,10 +58,11 @@
       &__info {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 2rem;
       }
 
-      &__price {
+      &__price,
+      &__quantity {
         margin: 0;
         font-size: 14px;
         color: #666;
@@ -72,6 +74,11 @@
         text-decoration: none;
         font-size: 14px;
       }
+    }
+
+    &__total {
+      align-self: flex-end;
+      font-weight: 600;
     }
   }
 }

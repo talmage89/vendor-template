@@ -5,6 +5,17 @@ import { Popover } from "~/components";
 import { useAuthStore, useCartStore } from "~/hooks";
 import "./Navbar.scss";
 
+const navlinks = [
+  {
+    label: "About",
+    to: "/about",
+  },
+  {
+    label: "Products",
+    to: "/products",
+  },
+];
+
 export const Navbar = () => {
   const { cart } = useCartStore();
   const { user, logout } = useAuthStore();
@@ -51,7 +62,11 @@ export const Navbar = () => {
       <div className="Navbar">
         <h1 className="Navbar__title">Vendor Frontend</h1>
         <div className="Navbar__links">
-          <NavLink to="/about">About</NavLink>
+          {navlinks.map((link) => (
+            <NavLink to={link.to} key={link.label}>
+              {link.label}
+            </NavLink>
+          ))}
           <NavLink to="/cart">Cart{cart.length > 0 && ` (${cart.length})`}</NavLink>
           {renderAvatar()}
         </div>
@@ -80,9 +95,11 @@ const MenuModal = ({ isOpen, onClose }: MenuModalProps) => {
       <div className="Navbar__modal-overlay" onClick={onClose} />
       <div className="Navbar__modal">
         <div className="Navbar__modal__content">
-          <NavLink to="/about" onClick={onClose}>
-            About
-          </NavLink>
+          {navlinks.map((link) => (
+            <NavLink to={link.to} key={link.label} onClick={onClose}>
+              {link.label}
+            </NavLink>
+          ))}
           <button
             className="Navbar__modal__content__cart"
             onClick={() => {

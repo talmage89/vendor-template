@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "~/hooks";
+import { formatPrice } from "~/utils/format";
 import { CheckoutFooter } from "..";
 import "./Cart.scss";
 
@@ -9,14 +10,7 @@ type CartProps = {
 
 export const Cart = (props: CartProps) => {
   const navigate = useNavigate();
-  const { cart, removeFromCart } = useCartStore();
-
-  function centsToDollars(cents: number) {
-    return Number(cents / 100).toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
-  }
+  const { cart, removeFromCart, changeQuantity } = useCartStore();
 
   return (
     <div className="Cart">
@@ -24,36 +18,57 @@ export const Cart = (props: CartProps) => {
         {cart.length === 0 ? (
           <p className="Cart__empty">Your cart is empty.</p>
         ) : (
-          cart.map((item) => (
-            <div key={item.id} className="Cart__item">
+          cart.map((item, index) => (
+            <div key={index} className="Cart__item">
               <img
-                src={item.images[0]?.image}
-                alt={item.title}
+                src={item.clothing.images[0]?.image}
+                alt={item.clothing.name}
                 className="Cart__item__image"
                 onClick={() => {
-                  navigate(`/art/${item.id}`);
+                  navigate(`/art/${item.clothing.id}`);
                 }}
               />
               <div className="Cart__item__details">
                 <h3
                   onClick={() => {
-                    navigate(`/art/${item.id}`);
+                    navigate(`/products/${item.clothing.id}`);
                   }}
                 >
-                  {item.title}
+                  {item.clothing.name} - {item.size.name} - {item.color.name}
                 </h3>
                 <span className="Cart__item__details__info">
-                  <p className="Cart__item__details__price">{centsToDollars(item.price_cents)}</p>
-                  <a className="Cart__item__details__remove" onClick={() => removeFromCart(item.id)}>
+                  <p className="Cart__item__details__price">
+                    {formatPrice(item.clothing.final_price_cents)}
+                  </p>
+                  <div className="Cart__item__details__quantity">
+                    <button onClick={() => changeQuantity(item.clothing.id, item.quantity - 1)}>
+                      -
+                    </button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => changeQuantity(item.clothing.id, item.quantity + 1)}>
+                      +
+                    </button>
+                  </div>
+                  <a
+                    className="Cart__item__details__remove"
+                    onClick={() => removeFromCart(item.clothing.id, item.size.id, item.color.id)}
+                  >
                     Remove
                   </a>
                 </span>
+              </div>
+              <div className="Cart__item__total">
+                <p>{formatPrice(item.clothing.final_price_cents * item.quantity)}</p>
               </div>
             </div>
           ))
         )}
       </div>
-      <CheckoutFooter text="Proceed to Checkout" onClick={props.onProceed} disabled={cart.length === 0} />
+      <CheckoutFooter
+        text="Proceed to Checkout"
+        onClick={props.onProceed}
+        disabled={cart.length === 0}
+      />
     </div>
   );
 };
