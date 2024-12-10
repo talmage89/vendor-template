@@ -4,11 +4,7 @@ import { formatPrice } from "~/utils/format";
 import { CheckoutFooter } from "..";
 import "./Cart.scss";
 
-type CartProps = {
-  onProceed: () => void;
-};
-
-export const Cart = (props: CartProps) => {
+export const Cart = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, changeQuantity } = useCartStore();
 
@@ -66,7 +62,7 @@ export const Cart = (props: CartProps) => {
       </div>
       <CheckoutFooter
         text="Proceed to Checkout"
-        onClick={props.onProceed}
+        onClick={() => navigate("/checkout")}
         disabled={cart.length === 0}
       />
     </div>
