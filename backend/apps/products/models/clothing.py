@@ -2,6 +2,7 @@ import uuid
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.http import Http404
 
 from .abstract import AbstractProduct, AbstractProductType
 
@@ -62,6 +63,15 @@ class Clothing(AbstractProduct):
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def get_object(cls, pk):
+        for model in cls.__subclasses__():
+            try:
+                return model.objects.get(pk=pk)
+            except model.DoesNotExist:
+                continue
+        raise Http404("No object found matching this ID")
 
 
 # ----------------------------------------------
