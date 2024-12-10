@@ -1,0 +1,21 @@
+@use "src/scss/variables" as *;
+
+.ProductList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  &__card {
+    width: 100%;
+    cursor: pointer;
+    &__image {
+      width: 100%;
+
+      & img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}

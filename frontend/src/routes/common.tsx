@@ -1,5 +1,6 @@
 import { About } from "~/features/about";
 import { Checkout } from "~/features/checkout";
+import { ProductDetail, ProductList } from "~/features/products";
 
 export const commonRoutes = [
   {
@@ -9,5 +10,13 @@ export const commonRoutes = [
   {
     path: "/cart",
     element: <Checkout />,
+  },
+  {
+    path: "/products",
+    element: <ProductList />,
+  },
+  {
+    path: "/products/:id",
+    element: <ProductDetail />,
   },
 ];

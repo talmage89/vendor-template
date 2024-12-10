@@ -1,21 +1,26 @@
 import { create } from "zustand";
-import { Artwork, http, uninterceptedInstance, User, UserModel } from "~/api";
+import { http, uninterceptedInstance, User, Clothing } from "~/api";
 
 type CartStore = {
-  cart: Artwork[];
-  setCart: (cart: Artwork[]) => void;
-  addToCart: (artwork: Artwork) => void;
+  cart: Clothing[];
+  setCart: (cart: Clothing[]) => void;
+  addToCart: (product: Clothing) => void;
   removeFromCart: (productId: string) => void;
+  isInCart: (productId: string) => boolean;
 };
 
 export const useCartStore = create<CartStore>((set) => ({
   cart: [],
-  setCart: (cart: Artwork[]) => set({ cart }),
+  setCart: (cart: Clothing[]) => set({ cart }),
   addToCart: (product) => set((state) => ({ cart: [...state.cart, product] })),
   removeFromCart: (productId: string) =>
     set((state) => ({
       cart: state.cart.filter((item) => item.id !== productId),
     })),
+  isInCart: (productId: string): boolean => {
+    const state = useCartStore.getState() as CartStore;
+    return state.cart.some((item: Clothing) => item.id === productId);
+  },
 }));
 
 type AuthStore = {
