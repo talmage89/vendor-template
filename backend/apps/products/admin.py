@@ -90,10 +90,6 @@ class ShirtAdmin(ClothingAdmin):
     pass
 
 
-class ArtworkAdmin(admin.ModelAdmin):
-    inlines = [ProductImageInline]
-
-
 admin.site.register(ShirtType)
 admin.site.register(Shirt, ShirtAdmin)
 admin.site.register(ProductImage)

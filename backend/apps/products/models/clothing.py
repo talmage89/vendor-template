@@ -41,13 +41,6 @@ class ProductImage(models.Model):
         ordering = ["-is_default", "-created_at"]
 
 
-class AbstractProductWithImages(AbstractProduct):
-    images = GenericRelation(ProductImage)
-
-    class Meta:
-        abstract = True
-
-
 class ProductSize(models.Model):
     name = models.CharField(max_length=50, help_text="e.g. Small, Medium, Large")
     code = models.CharField(max_length=10, help_text="e.g. S, M, L, XL")
@@ -61,9 +54,11 @@ class ProductSize(models.Model):
         return self.name
 
 
-class Clothing(AbstractProductWithImages):
+class Clothing(AbstractProduct):
+    images = GenericRelation(ProductImage)
     colors = GenericRelation(ProductColor, null=True, blank=True)
     available_sizes = models.ManyToManyField(ProductSize, blank=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         abstract = True

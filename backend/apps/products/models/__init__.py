@@ -4,6 +4,7 @@ from .clothing import (
     ProductSize,
     ShirtType,
     Shirt,
+    Clothing,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "ProductSize",
     "ShirtType",
     "Shirt",
+    "Clothing",
 ]
