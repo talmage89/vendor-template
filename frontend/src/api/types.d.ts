@@ -5,56 +5,94 @@ export type User = {
   last_name: string;
 };
 
-export type ProductImage = {
+export type PrintifyProductVariant = {
   id: string;
-  created_at: string;
-  updated_at: string;
-  image: string;
-  object_id: string;
+  grams: number;
+  sku: string;
+  title: string;
+  price: number;
+  is_available: boolean;
   is_default: boolean;
-  content_type: number;
-  color: number;
+  is_printify_express_eligible: boolean;
 };
 
-export type ProductColor = {
-  id: number;
-  name: string;
-  order: number;
-  product: string;
-  content_type: string;
-};
-
-export type ProductSize = {
-  id: number;
-  name: string;
-  code: string;
-  order: number;
-  is_active: boolean;
-};
-
-export type ShirtType = {
+export type PrintifyProductImage = {
   id: string;
-  created_at: string;
-  updated_at: string;
-  name: string;
+  is_default: boolean;
+  is_selected_for_publishing: boolean;
+  order: number | null;
+  original_url: string;
+  thumbnail: string;
+  medium: string;
+  large: string;
+  variant_ids: number[];
+};
+
+export type PrintifyProduct = {
+  id: string;
+  title: string;
   description: string;
-  base_price_cents: number;
-  gender: string;
+  images: PrintifyProductImage[];
+  is_locked: boolean;
+  is_economy_shipping_eligible: boolean;
+  is_economy_shipping_enabled: boolean;
+  is_printify_express_eligible: boolean;
+  is_printify_express_enabled: boolean;
+  is_deleted: boolean;
+  visible: boolean;
+  variants: PrintifyProductVariant[];
 };
 
-export type Clothing = {
-  id: string;
-  name: string;
-  images: ProductImage[];
-  colors: ProductColor[];
-  available_sizes: ProductSize[];
-  created_at: string;
-  updated_at: string;
-  price_adjustment_cents: number;
-  final_price_cents: number;
-  is_active: boolean;
-};
+// export type ProductImage = {
+//   id: string;
+//   created_at: string;
+//   updated_at: string;
+//   image: string;
+//   object_id: string;
+//   is_default: boolean;
+//   content_type: number;
+//   color: number;
+// };
 
-export type Shirt = Clothing & {
-  product_type: ShirtType;
-};
+// export type ProductColor = {
+//   id: number;
+//   name: string;
+//   order: number;
+//   product: string;
+//   content_type: string;
+// };
+
+// export type ProductSize = {
+//   id: number;
+//   name: string;
+//   code: string;
+//   order: number;
+//   is_active: boolean;
+// };
+
+// export type ShirtType = {
+//   id: string;
+//   created_at: string;
+//   updated_at: string;
+//   name: string;
+//   description: string;
+//   base_price_cents: number;
+//   gender: string;
+// };
+
+// export type Clothing = {
+//   id: string;
+//   name: string;
+//   images: ProductImage[];
+//   colors: ProductColor[];
+//   available_sizes: ProductSize[];
+//   created_at: string;
+//   updated_at: string;
+//   price_adjustment_cents: number;
+//   final_price_cents: number;
+//   is_active: boolean;
+// };
+
+// export type Shirt = Clothing & {
+//   product_type: ShirtType;
+// };
