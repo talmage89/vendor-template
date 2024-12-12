@@ -163,3 +163,9 @@ STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 
 PRINTIFY_API_KEY = env("PRINTIFY_API_KEY")
 PRINTIFY_SHOP_ID = env("PRINTIFY_SHOP_ID")
+
+
+IMGIX_CONFIG = {
+    "domain": env("IMGIX_DOMAIN"),
+    "sign_key": env("IMGIX_SIGN_KEY"),
+}

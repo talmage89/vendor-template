@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from django.conf import settings
+
+from .services import ImageService
+
 import requests
 
 
@@ -41,15 +44,15 @@ class PrintifyView(APIView):
         response = requests.get(url, headers=PrintifyView().get_headers())
 
         if response.status_code == 200:
-
+            image_service = ImageService()
             printifyData = response.json()
             products = []
+
             for printifyProduct in printifyData.get("data"):
                 product = {}
                 product["id"] = printifyProduct.get("id")
                 product["title"] = printifyProduct.get("title")
                 product["description"] = printifyProduct.get("description")
-                product["images"] = printifyProduct.get("images")
                 product["is_locked"] = printifyProduct.get("is_locked")
                 product["is_economy_shipping_eligible"] = printifyProduct.get(
                     "is_economy_shipping_eligible"
@@ -66,6 +69,35 @@ class PrintifyView(APIView):
                 product["is_deleted"] = printifyProduct.get("is_deleted")
                 product["visible"] = printifyProduct.get("visible")
 
+                images = []
+                for image in printifyProduct.get("images", []):
+                    original_url = image.get("src")
+                    if original_url:
+                        if "person-2" in original_url:
+                            continue
+                        images.append(
+                            {
+                                "id": image.get("id"),
+                                "is_default": image.get("is_default", False),
+                                "is_selected_for_publishing": image.get(
+                                    "is_selected_for_publishing", False
+                                ),
+                                "order": image.get("order"),
+                                "variant_ids": image.get("variant_ids", []),
+                                "original": original_url,
+                                "thumbnail": image_service.get_optimized_image_url(
+                                    original_url, width=100, height=100, quality=70
+                                ),
+                                "medium": image_service.get_optimized_image_url(
+                                    original_url, width=300, height=300, quality=80
+                                ),
+                                "large": image_service.get_optimized_image_url(
+                                    original_url, width=600, quality=85
+                                ),
+                            }
+                        )
+                product["images"] = images
+
                 variants = []
                 for printifyVariant in printifyProduct.get("variants", []):
                     if printifyVariant.get("is_enabled"):
@@ -81,8 +113,8 @@ class PrintifyView(APIView):
                             "is_printify_express_eligible"
                         )
                         variants.append(variant)
-
                 product["variants"] = variants
+
                 products.append(product)
 
             printifyData["data"] = products
