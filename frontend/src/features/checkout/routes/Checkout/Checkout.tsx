@@ -1,10 +1,10 @@
 import * as React from "react";
+import { Routes, Route } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
 import { Appearance, loadStripe } from "@stripe/stripe-js";
-import { Routes, Route } from "react-router-dom";
 import { http } from "~/api";
 import { Spinner } from "~/components";
-import { useAuthStore } from "~/hooks";
+import { useAuthStore, useCartStore, useCheckoutStore } from "~/hooks";
 import { CheckoutForm, CheckoutReturn } from "../../components";
 import "./Checkout.scss";
 
@@ -14,16 +14,24 @@ const loader = "always";
 
 export const Checkout = () => {
   const { user } = useAuthStore();
+  const { cart, getTotalCents } = useCartStore();
+  const { shipping, setExpectedTotal } = useCheckoutStore();
 
   const [isLoading, setIsLoading] = React.useState(true);
   const [clientSecret, setClientSecret] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    http
-      .post("/api/payments/create-setup-intent/", { user_id: user?.id })
+    (user
+      ? http.post("/api/payments/create-setup-intent/", { user_id: user?.id })
+      : http.post("/api/payments/create-setup-intent/")
+    )
       .then((res) => setClientSecret(res.data.client_secret))
       .finally(() => setIsLoading(false));
   }, [user]);
+
+  React.useEffect(() => {
+    setExpectedTotal(getTotalCents() + (shipping?.shipping_cost || 0));
+  }, [cart, shipping]);
 
   return (
     <div className="Checkout">

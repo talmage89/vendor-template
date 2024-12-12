@@ -82,6 +82,15 @@
 
     &__content {
       flex: 1;
+
+      &--previous {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      &--hidden {
+        display: none;
+      }
     }
 
     &__submit__container {
@@ -105,10 +114,7 @@
       font-size: 1rem;
       font-weight: 500;
       transition: background-color 0.2s ease-in-out;
-
-      & > span {
-        color: white;
-      }
+      color: white;
 
       &:disabled {
         background-color: $gray-light;

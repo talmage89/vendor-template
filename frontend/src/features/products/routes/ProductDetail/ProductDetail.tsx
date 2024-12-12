@@ -1,15 +1,22 @@
+import clsx from "clsx";
 import * as React from "react";
 import { useParams } from "react-router-dom";
-import { Clothing, ClothingModel, ProductColor, ProductSize } from "~/api";
+import {
+  http,
+  PrintifyProduct,
+  PrintifyProductColor,
+  PrintifyProductSize,
+  PrintifyProductImage,
+} from "~/api";
 import { useCartStore, useToast } from "~/hooks";
 import { formatPrice } from "~/utils/format";
 import "./ProductDetail.scss";
-import clsx from "clsx";
 
 export const ProductDetail = () => {
-  const [product, setProduct] = React.useState<Clothing | null>(null);
-  const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(null);
-  const [selectedColor, setSelectedColor] = React.useState<ProductColor | null>(null);
+  const [product, setProduct] = React.useState<PrintifyProduct | null>(null);
+  const [selectedSize, setSelectedSize] = React.useState<PrintifyProductSize | null>(null);
+  const [selectedColor, setSelectedColor] = React.useState<PrintifyProductColor | null>(null);
+  const [selectedImage, setSelectedImage] = React.useState<PrintifyProductImage | null>(null);
   const [quantityDisplay, setQuantityDisplay] = React.useState("");
   const [quantity, setQuantity] = React.useState(1);
 
@@ -19,24 +26,63 @@ export const ProductDetail = () => {
 
   React.useEffect(() => {
     if (!id) return;
-    ClothingModel.get(id).then((product) => setProduct(product.data));
+    http.get(`/api/fulfillment/products/${id}/`).then((res) => {
+      setProduct(res.data);
+      setSelectedColor(res.data.colors[0]);
+    });
   }, [id]);
 
   React.useEffect(() => {
-    if (quantity > 0) {
-      setQuantityDisplay(quantity.toString());
-    } else {
-      setQuantityDisplay("");
-    }
+    if (!imageValidForColor(selectedImage, selectedColor))
+      setSelectedImage(defaultImageForColor(product, selectedColor));
+  }, [product, selectedImage, selectedColor]);
+
+  React.useEffect(() => {
+    if (selectedSize && !findVariant(selectedColor, selectedSize)?.is_available)
+      setSelectedSize(null);
+  }, [selectedColor, selectedSize]);
+
+  React.useEffect(() => {
+    quantity > 0 ? setQuantityDisplay(quantity.toString()) : setQuantityDisplay("");
   }, [quantity]);
 
-  const handleAddToCart = () => {
-    if (!product || !selectedSize || !selectedColor) return;
-    addToCart(product, selectedSize, selectedColor, quantity);
-    toaster.success("Added to cart!");
+  const imageValidForColor = (
+    image: PrintifyProductImage | null,
+    color: PrintifyProductColor | null
+  ) => image?.variant_ids.some((id) => color?.variant_ids.includes(id)) ?? false;
 
+  const defaultImageForColor = (
+    product: PrintifyProduct | null,
+    color: PrintifyProductColor | null
+  ) =>
+    product?.images.find((image) => image.is_default && imageValidForColor(image, color)) ?? null;
+
+  const findVariant = (color: PrintifyProductColor | null, size: PrintifyProductSize | null) =>
+    product?.variants.find(
+      (variant) => color?.variant_ids.includes(variant.id) && size?.variant_ids.includes(variant.id)
+    );
+
+  const handleAddToCart = () => {
+    if (!product || !selectedSize || !selectedColor || quantity <= 0) return;
+    const variant = findVariant(selectedColor, selectedSize);
+    if (
+      !variant ||
+      variant.options[0] !== selectedColor?.id ||
+      variant.options[1] !== selectedSize?.id
+    ) {
+      toaster.error("Could not add to cart. Please try again.");
+      return;
+    }
+    const cartVariant = {
+      ...variant,
+      images: product.images.filter((image) => image.variant_ids.includes(variant.id)),
+      color: selectedColor,
+      size: selectedSize,
+      product_id: product.id,
+    };
+    addToCart(cartVariant, quantity);
+    toaster.success("Added to cart!");
     setSelectedSize(null);
-    setSelectedColor(null);
     setQuantity(1);
   };
 
@@ -45,17 +91,24 @@ export const ProductDetail = () => {
   return (
     <div className="ProductDetail">
       <div className="ProductDetail__image">
-        <img src={product.images[0].image} alt={product.name} />
+        <img src={(selectedImage || product.images[0]).large} alt={product.title} />
       </div>
       <div className="ProductDetail__images">
-        {product.images.map((image) => (
-          <div className="ProductDetail__images__image" key={image.id}>
-            <img src={image.image} alt={product.name} />
+        {product.images.map((image, index) => (
+          <div
+            className={clsx("ProductDetail__images__image", {
+              "ProductDetail__images__image--selected": image.id === selectedImage?.id,
+              "ProductDetail__images__image--hidden": !imageValidForColor(image, selectedColor),
+            })}
+            key={index}
+            onClick={() => setSelectedImage(image)}
+          >
+            <img src={image.thumbnail} alt={product.title} width={100} height={100} />
           </div>
         ))}
       </div>
-      <h2 className="ProductDetail__name">{product.name}</h2>
-      <h3 className="ProductDetail__price">{formatPrice(product.final_price_cents)}</h3>
+      <h2 className="ProductDetail__name">{product.title}</h2>
+      <h3 className="ProductDetail__price">{formatPrice(product.variants[0].price)}</h3>
       <div className="ProductDetail__colors">
         <h3>Colors</h3>
         {product.colors.map((color) => (
@@ -66,21 +119,23 @@ export const ProductDetail = () => {
             })}
             onClick={() => setSelectedColor(color)}
           >
-            {color.name}
+            {color.title}
           </div>
         ))}
       </div>
       <div className="ProductDetail__sizes">
         <h3>Sizes</h3>
-        {product.available_sizes.map((size) => (
+        {product.sizes.map((size) => (
           <div
             key={size.id}
             className={clsx("ProductDetail__sizes__size", {
+              "ProductDetail__sizes__size--unavailable": !findVariant(selectedColor, size)
+                ?.is_available,
               "ProductDetail__sizes__size--selected": size.id === selectedSize?.id,
             })}
-            onClick={() => setSelectedSize(size)}
+            onClick={() => findVariant(selectedColor, size)?.is_available && setSelectedSize(size)}
           >
-            {size.name}
+            {size.title}
           </div>
         ))}
       </div>

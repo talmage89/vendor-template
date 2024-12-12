@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import { Clothing, ClothingModel } from "~/api";
+import { http, PrintifyProductVariant } from "~/api";
 import { Navbar } from "~/components";
 import { CartItem, useCartStore } from "~/hooks";
 import "~/index.scss";
@@ -19,22 +19,26 @@ export const Layout = () => {
       const cart = cartJSON ? JSON.parse(cartJSON) : [];
       Promise.allSettled(
         cart.map((item: CartItem) =>
-          ClothingModel.get(item.clothing.id).then((clothing) => clothing.data)
+          http
+            .get(`/api/fulfillment/products/${item.variant.product_id}/`)
+            .then((res) =>
+              res.data.variants.find(
+                (variant: PrintifyProductVariant) => variant.id === item.variant.id
+              )
+            )
         )
-      ).then((clothing) => {
-        const filteredClothing = clothing
+      ).then((variants) => {
+        const filteredVariants = variants
           .filter(
-            (promise): promise is PromiseFulfilledResult<Clothing> =>
-              promise.status === "fulfilled" && promise.value.is_active
+            (promise): promise is PromiseFulfilledResult<PrintifyProductVariant> =>
+              promise.status === "fulfilled" && promise.value.is_available
           )
           .map((promise) => promise.value);
         setCart(
           cart.filter(
             (item: CartItem) =>
               item.quantity > 0 &&
-              item.clothing.available_sizes.find((s) => s.id === item.size.id) &&
-              item.clothing.colors.find((c) => c.id === item.color.id) &&
-              filteredClothing.find((clothing) => clothing.id === item.clothing.id)
+              filteredVariants.find((variant) => variant.id === item.variant.id)
           )
         );
       });

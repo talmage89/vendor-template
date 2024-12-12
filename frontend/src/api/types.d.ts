@@ -6,7 +6,7 @@ export type User = {
 };
 
 export type PrintifyProductVariant = {
-  id: string;
+  id: number;
   grams: number;
   sku: string;
   title: string;
@@ -14,10 +14,11 @@ export type PrintifyProductVariant = {
   is_available: boolean;
   is_default: boolean;
   is_printify_express_eligible: boolean;
+  options: [number, number];
 };
 
 export type PrintifyProductImage = {
-  id: string;
+  id: number;
   is_default: boolean;
   is_selected_for_publishing: boolean;
   order: number | null;
@@ -25,6 +26,19 @@ export type PrintifyProductImage = {
   thumbnail: string;
   medium: string;
   large: string;
+  variant_ids: number[];
+};
+
+export type PrintifyProductColor = {
+  id: number;
+  title: string;
+  colors: string[];
+  variant_ids: number[];
+};
+
+export type PrintifyProductSize = {
+  id: number;
+  title: string;
   variant_ids: number[];
 };
 
@@ -41,6 +55,8 @@ export type PrintifyProduct = {
   is_deleted: boolean;
   visible: boolean;
   variants: PrintifyProductVariant[];
+  sizes: PrintifyProductSize[];
+  colors: PrintifyProductColor[];
 };
 
 // export type ProductImage = {

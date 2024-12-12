@@ -16,44 +16,44 @@ export const Cart = () => {
           cart.map((item, index) => (
             <div key={index} className="Cart__item">
               <img
-                src={item.clothing.images[0]?.image}
-                alt={item.clothing.name}
+                src={item.variant.images[0]?.thumbnail}
+                alt={item.variant.title}
                 className="Cart__item__image"
                 onClick={() => {
-                  navigate(`/art/${item.clothing.id}`);
+                  navigate(`/art/${item.variant.id}`);
                 }}
               />
               <div className="Cart__item__details">
                 <h3
                   onClick={() => {
-                    navigate(`/products/${item.clothing.id}`);
+                    navigate(`/products/${item.variant.product_id}`);
                   }}
                 >
-                  {item.clothing.name} - {item.size.name} - {item.color.name}
+                  {item.variant.title} - {item.variant.size.title} - {item.variant.color.title}
                 </h3>
                 <span className="Cart__item__details__info">
                   <p className="Cart__item__details__price">
-                    {formatPrice(item.clothing.final_price_cents)}
+                    {formatPrice(item.variant.price)}
                   </p>
                   <div className="Cart__item__details__quantity">
-                    <button onClick={() => changeQuantity(item.clothing.id, item.quantity - 1)}>
+                    <button onClick={() => changeQuantity(item.variant.id, item.quantity - 1)}>
                       -
                     </button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => changeQuantity(item.clothing.id, item.quantity + 1)}>
+                    <button onClick={() => changeQuantity(item.variant.id, item.quantity + 1)}>
                       +
                     </button>
                   </div>
                   <a
                     className="Cart__item__details__remove"
-                    onClick={() => removeFromCart(item.clothing.id, item.size.id, item.color.id)}
+                    onClick={() => removeFromCart(item.variant.id)}
                   >
                     Remove
                   </a>
                 </span>
               </div>
               <div className="Cart__item__total">
-                <p>{formatPrice(item.clothing.final_price_cents * item.quantity)}</p>
+                <p>{formatPrice(item.variant.price * item.quantity)}</p>
               </div>
             </div>
           ))

@@ -14,12 +14,16 @@ export const ProductList = () => {
   // }, []);
 
   React.useEffect(() => {
-    http.get("/api/printify/products/").then((res) => setPrintifyProducts(res.data.data));
+    http.get("/api/fulfillment/products/").then((res) => setPrintifyProducts(res.data.data));
   }, []);
 
   function renderProductCard(product: PrintifyProduct) {
     return (
-      <div key={product.id} className="ProductList__card">
+      <div
+        key={product.id}
+        className="ProductList__card"
+        onClick={() => navigate(`/products/${product.id}`)}
+      >
         <h4>{product.title}</h4>
         <img src={product.images[0]?.medium} alt={product.title} width={300} height={300} />
         <div>

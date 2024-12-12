@@ -1,3 +1,5 @@
+@use "src/scss/variables" as *;
+
 .ProductDetail {
   display: flex;
   flex-direction: column;
@@ -25,12 +27,12 @@
     width: 100%;
     display: flex;
     gap: 1rem;
-    overflow-x: auto;
     padding: 1rem 0;
 
     &__image {
-      flex: 0 0 150px;
-      height: 150px;
+      border: 2px solid transparent;
+      width: 100px;
+      height: 100px;
       cursor: pointer;
 
       & img {
@@ -43,6 +45,14 @@
         &:hover {
           opacity: 0.8;
         }
+      }
+
+      &--selected {
+        border: 2px solid $accent-blue;
+      }
+
+      &--hidden {
+        display: none;
       }
     }
   }
@@ -80,6 +90,11 @@
 
     &__color,
     &__size {
+      &--unavailable {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
       &--selected {
         background-color: #000;
         color: #fff;
