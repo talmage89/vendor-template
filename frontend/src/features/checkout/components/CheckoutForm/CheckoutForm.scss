@@ -1,17 +1,156 @@
-@use 'src/scss/animations.scss' as *;
-@use 'src/scss/mixins.scss' as *;
-@use 'src/scss/variables.scss' as *;
+@use "src/scss/animations.scss" as *;
+@use "src/scss/mixins.scss" as *;
+@use "src/scss/variables.scss" as *;
 
 .CheckoutForm {
+  @include stripe-font-family;
+  flex-grow: 1;
+  display: flex;
+  overflow: hidden;
+
+  &__summary {
+    flex: 1;
+    background-color: #f5f5f5;
+    padding: 2rem;
+  }
+
+  &__form {
+    overflow: auto;
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    &__subheader {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    &__back {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 14px;
+      font-weight: 500;
+      color: $gray-dark;
+      text-decoration: none;
+      transition: color 0.2s ease-in-out;
+      width: fit-content;
+
+      & > svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+
+    &__steps {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      &__step {
+        font-size: 14px;
+        font-weight: 500;
+        color: $gray-light;
+        cursor: pointer;
+
+        &--active {
+          color: $gray-dark;
+        }
+      }
+
+      &__separator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &__icon {
+          width: 16px;
+          height: 16px;
+          stroke: $gray-light;
+        }
+      }
+    }
+
+    &__content {
+      flex: 1;
+    }
+
+    &__submit__container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      & > p {
+        font-size: 14px;
+        color: $gray-dark;
+        text-align: center;
+      }
+    }
+
+    &__submit {
+      margin: 0.5rem 0;
+      background-color: $gray-dark;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background-color 0.2s ease-in-out;
+
+      & > span {
+        color: white;
+      }
+
+      &:disabled {
+        background-color: $gray-light;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.SignInStep {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
-  overflow: auto;
 
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  &__signinButton {
+    margin: 0.5rem 0;
+    background-color: $gray-dark;
+    color: white;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out;
+
+    &:hover {
+      background-color: $gray-dark;
+    }
+  }
+
+  & > p {
+    width: 100%;
+    text-align: center;
+    color: $gray-light;
+
+    & > a {
+      color: $accent-blue;
+      text-decoration: none;
+    }
+  }
+
+  &__input {
+    @include stripe-input;
   }
 }

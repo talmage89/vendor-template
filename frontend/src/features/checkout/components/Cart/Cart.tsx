@@ -1,12 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "~/hooks";
 import { formatPrice } from "~/utils/format";
-import { CheckoutFooter } from "..";
 import "./Cart.scss";
 
 export const Cart = () => {
   const navigate = useNavigate();
-  const { cart, removeFromCart, changeQuantity } = useCartStore();
+  const { cart, removeFromCart, changeQuantity, getTotalCents } = useCartStore();
 
   return (
     <div className="Cart">
@@ -60,11 +59,19 @@ export const Cart = () => {
           ))
         )}
       </div>
-      <CheckoutFooter
-        text="Proceed to Checkout"
-        onClick={() => navigate("/checkout")}
-        disabled={cart.length === 0}
-      />
+      <div className="Cart__footer">
+        <span className="Cart__footer__subtotal">
+          <p className="Cart__footer__subtotal__label">Subtotal:</p>
+          <p className="Cart__footer__subtotal__amount">{formatPrice(getTotalCents())}</p>
+        </span>
+        <button
+          className="Cart__footer__checkout"
+          disabled={cart.length === 0}
+          onClick={() => navigate("/checkout")}
+        >
+          Proceed to Checkout
+        </button>
+      </div>
     </div>
   );
 };

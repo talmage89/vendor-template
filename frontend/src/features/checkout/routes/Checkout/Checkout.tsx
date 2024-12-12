@@ -4,7 +4,7 @@ import { Appearance, loadStripe } from "@stripe/stripe-js";
 import { Routes, Route } from "react-router-dom";
 import { http } from "~/api";
 import { Spinner } from "~/components";
-import { useCartStore } from "~/hooks";
+import { useAuthStore } from "~/hooks";
 import { CheckoutForm, CheckoutReturn } from "../../components";
 import "./Checkout.scss";
 
@@ -13,29 +13,17 @@ const appearance = { theme: "stripe" };
 const loader = "always";
 
 export const Checkout = () => {
+  const { user } = useAuthStore();
+
   const [isLoading, setIsLoading] = React.useState(true);
   const [clientSecret, setClientSecret] = React.useState<string | null>(null);
-  const [dpmCheckerLink, setDpmCheckerLink] = React.useState<string | null>(null);
-
-  const { cart } = useCartStore();
 
   React.useEffect(() => {
-    if (!cart.length) return;
     http
-      .post("/api/payments/create-payment-intent/", {
-        cart: cart.map((item) => ({
-          clothing: item.clothing.id,
-          quantity: item.quantity,
-          size: item.size.id,
-          color: item.color.id,
-        })),
-      })
-      .then((res) => {
-        setClientSecret(res.data.client_secret);
-        setDpmCheckerLink(res.data.dpm_checker_link);
-        setIsLoading(false);
-      });
-  }, [cart]);
+      .post("/api/payments/create-setup-intent/", { user_id: user?.id })
+      .then((res) => setClientSecret(res.data.client_secret))
+      .finally(() => setIsLoading(false));
+  }, [user]);
 
   return (
     <div className="Checkout">
@@ -49,7 +37,7 @@ export const Checkout = () => {
           stripe={stripePromise}
         >
           <Routes>
-            <Route path="/" element={<CheckoutForm dpmCheckerLink={dpmCheckerLink} />} />
+            <Route path="/" element={<CheckoutForm />} />
             <Route path="complete" element={<CheckoutReturn />} />
           </Routes>
         </Elements>

@@ -17,6 +17,7 @@ type CartStore = {
   changeQuantity: (productId: string, quantity: number) => void;
   changeSize: (productId: string, size: ProductSize) => void;
   changeColor: (productId: string, color: ProductColor) => void;
+  getTotalCents: () => number;
 };
 
 export const useCartStore = create<CartStore>((set) => ({
@@ -93,6 +94,10 @@ export const useCartStore = create<CartStore>((set) => ({
         ),
       }));
     }
+  },
+  getTotalCents: () => {
+    const state = useCartStore.getState() as CartStore;
+    return state.cart.reduce((total, item) => total + item.clothing.final_price_cents * item.quantity, 0);
   },
 }));
 
