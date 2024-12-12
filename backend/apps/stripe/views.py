@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from apps.accounts.models import User
-from apps.products.models import Clothing
+from apps.printify.views import PrintifyView, ShippingCostView
 
 import stripe
 
@@ -13,37 +13,76 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class PaymentIntentView(APIView):
-    def calculate_order_amount(self, cart):
+    def calculate_order_amount(self, cart, country):
         total_amount = 0
         for item in cart:
-            clothing = Clothing.get_object(item["clothing"])
-            total_amount += clothing.final_price_cents * item["quantity"]
-        return total_amount
+            product = PrintifyView.get_product_internal(item["variant"]["product_id"])
+
+            if not product:
+                raise Exception("Product not found")
+
+            variant = next(
+                (v for v in product["variants"] if v["id"] == item["variant"]["id"]),
+                None,
+            )
+
+            if not variant:
+                raise Exception("Variant not found")
+
+            if not variant["is_available"]:
+                raise Exception("Variant not available")
+
+            total_amount += variant["price"] * item["quantity"]
+
+        shipping_cost = ShippingCostView.get_shipping_cost(country)
+        if shipping_cost is None:
+            raise Exception("Shipping cost not found")
+
+        return total_amount + shipping_cost["shipping_cost"]
 
     def post(self, request):
         try:
             cart = request.data["cart"]
+            country = request.data["country"]
+            expected_total = request.data["expected_total"]
 
             if not len(cart):
                 return Response(
-                    {"error": "No clothing items provided"},
+                    {"error": "Cart is empty"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                order_amount = self.calculate_order_amount(cart, country)
+            except Exception as e:
+                return Response(
+                    {"error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if order_amount != expected_total:
+                return Response(
+                    {"error": "Order amount does not match expected total"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            intent = stripe.PaymentIntent.create(
-                amount=self.calculate_order_amount(cart),
-                currency="usd",
-            )
+            intent_params = {
+                "amount": order_amount,
+                "currency": "usd",
+            }
 
-            return Response(
-                {
-                    "client_secret": intent["client_secret"],
-                    # TODO: REMOVE FOR PRODUCTION
-                    "dpm_checker_link": "https://dashboard.stripe.com/settings/payment_methods/review?transaction_id={}".format(
-                        intent["id"]
-                    ),
-                }
-            )
+            if request.user.is_authenticated:
+                if not request.user.stripe_customer_id:
+                    customer = stripe.Customer.create(
+                        email=request.user.email, metadata={"user_id": request.user.id}
+                    )
+                    request.user.stripe_customer_id = customer.id
+                    request.user.save()
+
+                intent_params["customer"] = request.user.stripe_customer_id
+                intent_params["setup_future_usage"] = "off_session"
+
+            intent = stripe.PaymentIntent.create(**intent_params)
+
+            return Response({"client_secret": intent["client_secret"]})
 
         except Exception as e:
             return Response(
