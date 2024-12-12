@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_countries",
     "apps.accounts",
     "apps.products",
     "rest_framework",
@@ -159,3 +160,6 @@ TESTING_RECIPIENT = env("TESTING_RECIPIENT")
 SESSION_COOKIE_DOMAIN = None
 
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+
+PRINTIFY_API_KEY = env("PRINTIFY_API_KEY")
+PRINTIFY_SHOP_ID = env("PRINTIFY_SHOP_ID")

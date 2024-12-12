@@ -5,6 +5,7 @@ from .clothing import (
     ShirtType,
     Shirt,
     Clothing,
+    ProductShippingCost,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "ShirtType",
     "Shirt",
     "Clothing",
+    "ProductShippingCost",
 ]

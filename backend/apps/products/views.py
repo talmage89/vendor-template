@@ -2,18 +2,24 @@ from itertools import chain
 from django.http import Http404
 from rest_framework import viewsets
 
-from .models import ProductImage, ShirtType, Shirt, Clothing
+from .models import ProductImage, ShirtType, Shirt, Clothing, ProductShippingCost
 from .serializers import (
     ShirtTypeSerializer,
     ShirtSerializer,
     ProductImageSerializer,
     ClothingSerializer,
+    ProductShippingCostSerializer,
 )
 
 
 class ProductImageViewSet(viewsets.ModelViewSet):
     queryset = ProductImage.objects.all()
     serializer_class = ProductImageSerializer
+
+
+class ProductShippingCostViewSet(viewsets.ModelViewSet):
+    queryset = ProductShippingCost.objects.all()
+    serializer_class = ProductShippingCostSerializer
 
 
 class ShirtTypeViewSet(viewsets.ModelViewSet):

@@ -103,6 +103,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         null=True,
     )
+    stripe_customer_id = models.CharField(
+        _("stripe customer id"),
+        max_length=255,
+        blank=True,
+        null=True,
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []

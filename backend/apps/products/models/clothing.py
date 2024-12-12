@@ -3,6 +3,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.http import Http404
+from django.core.exceptions import ValidationError
+from django_countries.fields import CountryField
 
 from .abstract import AbstractProduct, AbstractProductType
 
@@ -55,6 +57,33 @@ class ProductSize(models.Model):
         return self.name
 
 
+class ProductShippingCost(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    product_type = GenericForeignKey("content_type", "object_id")
+    country = CountryField(
+        blank=True,
+        null=True,
+        help_text="Leave empty for 'Rest of World' rate",
+    )
+    price_cents = models.IntegerField()
+
+    class Meta:
+        unique_together = [["content_type", "object_id", "country"]]
+        ordering = ["country"]
+
+    def __str__(self):
+        country_name = self.country.name if self.country else "Rest of World"
+        return f"{self.product_type} - {country_name} - {self.price_cents}¢"
+
+
+class ClothingType(AbstractProductType):
+    shipping_costs = GenericRelation(ProductShippingCost)
+
+    class Meta:
+        abstract = True
+
+
 class Clothing(AbstractProduct):
     images = GenericRelation(ProductImage)
     colors = GenericRelation(ProductColor, null=True, blank=True)
@@ -105,7 +134,7 @@ class Clothing(AbstractProduct):
 # ----------------------------------------------
 
 
-class ShirtType(AbstractProductType):
+class ShirtType(ClothingType):
     GENDER_CHOICES = [
         ("male", "Male"),
         ("female", "Female"),
@@ -116,13 +145,12 @@ class ShirtType(AbstractProductType):
     def __str__(self):
         return f"{self.name} ({self.gender})"
 
-    class Meta:
-        verbose_name = "Shirt Type"
-        verbose_name_plural = "Shirt Types"
-
 
 class Shirt(Clothing):
     product_type = models.ForeignKey(ShirtType, on_delete=models.PROTECT)
 
     def get_base_price_cents(self):
         return self.product_type.base_price_cents
+
+    def __str__(self):
+        return f"{self.product_type.name} - {self.name}"

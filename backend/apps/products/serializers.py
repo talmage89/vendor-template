@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import ProductImage, ProductColor, ProductSize, ShirtType, Shirt, Clothing
+from .models import ProductImage, ProductColor, ProductSize, ShirtType, Shirt, ProductShippingCost
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -21,6 +21,12 @@ class ProductColorSerializer(serializers.ModelSerializer):
 class ProductSizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductSize
+        fields = "__all__"
+
+
+class ProductShippingCostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductShippingCost
         fields = "__all__"
 
 

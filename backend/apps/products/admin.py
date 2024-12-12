@@ -1,8 +1,43 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.db import models
 
-from .models import ProductColor, ProductImage, ProductSize, ShirtType, Shirt
+from .models import (
+    ProductColor,
+    ProductImage,
+    ProductSize,
+    ShirtType,
+    Shirt,
+    ProductShippingCost,
+)
+
+
+class ProductShippingCostInline(GenericTabularInline):
+    model = ProductShippingCost
+    extra = 0
+    fields = ["country", "price_cents"]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.order_by(models.F("country").asc(nulls_last=True))
+
+
+class ClothingTypeAdmin(admin.ModelAdmin):
+    inlines = [ProductShippingCostInline]
+    list_display = ["name", "base_price_cents", "get_shipping_countries"]
+    search_fields = ["name"]
+
+    def get_shipping_countries(self, obj):
+        countries = []
+        for cost in obj.shipping_costs.all():
+            if cost.country:
+                countries.append(cost.country.name)
+            else:
+                countries.append("Rest of World")
+        return ", ".join(countries)
+
+    get_shipping_countries.short_description = "Shipping Countries"
 
 
 class ProductColorInline(GenericTabularInline):
@@ -86,11 +121,15 @@ class ClothingAdmin(admin.ModelAdmin):
     get_colors.short_description = "Colors"
 
 
+class ShirtTypeAdmin(ClothingTypeAdmin):
+    pass
+
+
 class ShirtAdmin(ClothingAdmin):
     pass
 
 
-admin.site.register(ShirtType)
+admin.site.register(ShirtType, ShirtTypeAdmin)
 admin.site.register(Shirt, ShirtAdmin)
 admin.site.register(ProductImage)
 admin.site.register(ProductColor)

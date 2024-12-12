@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from apps.accounts.models import User
 from apps.products.models import Clothing
 
 import stripe
@@ -48,4 +49,42 @@ class PaymentIntentView(APIView):
             return Response(
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class SetupIntentView(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data.get("user_id")
+
+            setup_intent_params = {
+                "usage": "on_session",
+                "automatic_payment_methods": {
+                    "enabled": True,
+                },
+            }
+
+            if user_id:
+                user = User.objects.get(id=user_id)
+
+                if not user.stripe_customer_id:
+                    customer = stripe.Customer.create(
+                        email=user.email, metadata={"user_id": user.id}
+                    )
+                    user.stripe_customer_id = customer.id
+                    user.save()
+
+                setup_intent_params["customer"] = user.stripe_customer_id
+
+            setup_intent = stripe.SetupIntent.create(**setup_intent_params)
+
+            return Response({"client_secret": setup_intent.client_secret})
+
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
