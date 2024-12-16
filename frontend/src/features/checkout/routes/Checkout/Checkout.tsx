@@ -4,7 +4,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { Appearance, loadStripe } from "@stripe/stripe-js";
 import { http } from "~/api";
 import { Spinner } from "~/components";
-import { useAuthStore, useCartStore, useCheckoutStore } from "~/hooks";
+import { useCartStore, useCheckoutStore, useToast } from "~/hooks";
 import { CheckoutForm, CheckoutReturn } from "../../components";
 import "./Checkout.scss";
 
@@ -13,21 +13,20 @@ const appearance = { theme: "stripe" };
 const loader = "always";
 
 export const Checkout = () => {
-  const { user } = useAuthStore();
   const { cart, getTotalCents } = useCartStore();
   const { shipping, setExpectedTotal } = useCheckoutStore();
+  const toaster = useToast();
 
   const [isLoading, setIsLoading] = React.useState(true);
   const [clientSecret, setClientSecret] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    (user
-      ? http.post("/api/payments/create-setup-intent/", { user_id: user?.id })
-      : http.post("/api/payments/create-setup-intent/")
-    )
+    http
+      .post("/api/payments/create-setup-intent/")
       .then((res) => setClientSecret(res.data.client_secret))
+      .catch(() => toaster.error("Checkout failed to load. Please try again."))
       .finally(() => setIsLoading(false));
-  }, [user]);
+  }, [cart]);
 
   React.useEffect(() => {
     setExpectedTotal(getTotalCents() + (shipping?.shipping_cost || 0));
@@ -41,7 +40,11 @@ export const Checkout = () => {
         </div>
       ) : clientSecret ? (
         <Elements
-          options={{ clientSecret, appearance: appearance as Appearance, loader }}
+          options={{
+            clientSecret,
+            appearance: appearance as Appearance,
+            loader,
+          }}
           stripe={stripePromise}
         >
           <Routes>

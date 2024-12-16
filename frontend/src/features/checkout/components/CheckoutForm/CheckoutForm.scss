@@ -81,9 +81,10 @@
     }
 
     &__content {
-      flex: 1;
+      flex-grow: 1;
 
       &--previous {
+        flex-grow: 0;
         opacity: 0.5;
         pointer-events: none;
       }

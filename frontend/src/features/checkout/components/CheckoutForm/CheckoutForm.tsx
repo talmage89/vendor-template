@@ -8,12 +8,13 @@ import { useAuthStore, useCartStore, useCheckoutStore, useToast } from "~/hooks"
 import { formatPrice } from "~/utils/format";
 import "./CheckoutForm.scss";
 
-const steps = ["Sign in", "Shipping Details", "Payment Details"];
+const steps = ["Email", "Shipping Details", "Payment Details"];
 
 export const CheckoutForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { cart, getTotalCents } = useCartStore();
   const {
     expectedTotal,
@@ -32,7 +33,7 @@ export const CheckoutForm = () => {
       <div
         className={clsx("CheckoutForm__form__content", {
           "CheckoutForm__form__content--previous": currentStep > stepIndex,
-          "CheckoutForm__form__content--hidden": currentStep <stepIndex,
+          "CheckoutForm__form__content--hidden": currentStep < stepIndex,
         })}
       >
         {children}
@@ -147,25 +148,19 @@ const SignInStep = () => {
 
   const [error, setError] = React.useState(false);
 
+  React.useEffect(() => {
+    user && setEmail(user.email);
+  }, [user]);
+
   const verifyEmail = (email: string) => {
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     setError(!valid);
     return valid;
   };
 
-  if (user) {
-    return null;
-  }
-
   return (
     <div className="SignInStep CheckoutForm__form__content">
-      <h3 className="CheckoutForm__form__subheader">Sign in to your account</h3>
-      <button className="SignInStep__signinButton">Sign In</button>
-      <p>
-        Sign in to save time on checkout. If you don't have an account, you can create one{" "}
-        <Link to="/signup">here</Link>.
-      </p>
-      <p>Or, enter your email below to checkout as a guest.</p>
+      <h3 className="CheckoutForm__form__subheader mb-6">Email</h3>
       <div className="SignInStep__input">
         <label>Email Address</label>
         <input
@@ -183,6 +178,7 @@ const SignInStep = () => {
 
 const ShippingDetailsStep = () => {
   const { setShipping } = useCheckoutStore();
+  const { cart, getTotalCents } = useCartStore();
   const toaster = useToast();
 
   const [addressValid, setAddressValid] = React.useState(false);
@@ -192,19 +188,24 @@ const ShippingDetailsStep = () => {
       <h3 className="CheckoutForm__form__subheader mb-6">Shipping Details</h3>
       <AddressElement
         id="address-element"
-        options={{ mode: "shipping", autocomplete: { mode: "automatic" } }}
-        onChange={(event) => {
-          event.complete
-            ? http
+        options={{ mode: "shipping" }}
+        onChange={async (event) => {
+          if (event.complete) {
+            try {
+              const shipping = await http
                 .post("/api/fulfillment/shipping-costs/", {
+                  cart,
                   country: event.value.address.country,
                 })
-                .then((res) => setShipping({ ...res.data, country: event.value.address.country }))
-                .catch(() => {
-                  toaster.error("Failed to get shipping costs.");
-                  setShipping(null);
-                })
-            : setShipping(null);
+                .then((res) => res.data);
+              setShipping({ ...shipping, country: event.value.address.country });
+            } catch (error) {
+              toaster.error("Failed to get shipping costs.");
+              setShipping(null);
+            }
+          } else {
+            setShipping(null);
+          }
           setAddressValid(event.complete);
         }}
       />
@@ -216,38 +217,14 @@ const PaymentDetailsStep = () => {
   const [paymentInputValid, setPaymentInputValid] = React.useState(false);
 
   return (
-    <>
-      <div className="PaymentDetailsStep CheckoutForm__form__content">
-        <h3 className="CheckoutForm__form__subheader mb-6">Payment Details</h3>
-        <PaymentElement
-          id="payment-element"
-          options={{ layout: "accordion" }}
-          onChange={(event) => setPaymentInputValid(event.complete)}
-        />
-      </div>
-      {/* <div className="CheckoutForm__form__submit__container">
-        {message && (
-          <div id="payment-message" className="CheckoutForm__form__error">
-            {message}
-          </div>
-        )}
-        <div className="CheckoutForm__form__terms">
-          <label>
-            <input type="checkbox" required onChange={(e) => setTermsAccepted(e.target.checked)} />I
-            agree to the <Link to="/terms">Terms of Service</Link> and{" "}
-            <Link to="/privacy">Privacy Policy</Link>
-          </label>
-        </div>
-        <button
-          disabled={isLoading || !stripe || !elements || !termsAccepted || !paymentInputValid}
-          className="CheckoutForm__form__submit"
-          onClick={handleSubmit}
-        >
-          <span>Pay Now</span>
-        </button>
-        <p>Your payment method will be charged {formatPrice(expectedTotal)}.</p>
-        <p>All transactions are secure and encrypted.</p>
-      </div> */}
-    </>
+    <div className="PaymentDetailsStep CheckoutForm__form__content">
+      <h3 className="CheckoutForm__form__subheader mb-6">Payment Details</h3>
+      <PaymentElement
+        id="payment-element"
+        options={{ layout: "accordion" }}
+        onChange={(event) => setPaymentInputValid(event.complete)}
+      />
+      <AddressElement id="billing-address-element" options={{ mode: "billing" }} />
+    </div>
   );
 };

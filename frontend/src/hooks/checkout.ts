@@ -15,6 +15,7 @@ interface CheckoutState {
   setEmail: (email: string) => void;
   setShipping: (shipping: any) => void;
   setExpectedTotal: (total: number) => void;
+
   handlePaymentSubmission: (params: {
     stripe: Stripe;
     elements: StripeElements;
@@ -51,7 +52,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => ({
         return;
       }
 
-      const { data } = await http.post("/api/payments/create-payment-intent/", {
+      const { data: paymentIntent } = await http.post("/api/payments/create-payment-intent/", {
         cart: cart.map((item) => ({
           variant: item.variant,
           quantity: item.quantity,
@@ -62,7 +63,7 @@ export const useCheckoutStore = create<CheckoutState>((set, get) => ({
 
       const { error } = await stripe.confirmPayment({
         elements,
-        clientSecret: data.client_secret,
+        clientSecret: paymentIntent.client_secret,
         confirmParams: {
           return_url: `${window.location.origin}/checkout/complete`,
         },
