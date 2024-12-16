@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import PaymentIntentView, SetupIntentView
+from .views import PaymentIntentView, SetupIntentView, WebhookView
 
 urlpatterns = [
     path(
@@ -13,4 +13,5 @@ urlpatterns = [
         SetupIntentView.as_view(),
         name="create_setup_intent",
     ),
+    path("webhook/", WebhookView.as_view(), name="webhook"),
 ]

@@ -296,6 +296,54 @@ class VerifyEmailView(APIView):
             )
 
 
+class RequestNewVerificationEmailView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def throttled(self, request, wait):
+        return Response(
+            {
+                "message": "Please wait before requesting another reset link",
+                "seconds_remaining": int(wait),
+            },
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    def post(self, request):
+        token = request.data.get("token")
+
+        try:
+            user = User.objects.get(email_verification_token=token)
+
+            time_since_last_request = (
+                timezone.now() - user.email_verification_token_created_at
+            )
+            min_time_between_requests = timedelta(minutes=5)
+
+            if time_since_last_request < min_time_between_requests:
+                time_remaining = min_time_between_requests - time_since_last_request
+                seconds_remaining = int(time_remaining.total_seconds())
+                return self.throttled(request, seconds_remaining)
+
+            if not is_token_valid(user.email_verification_token_created_at):
+                verification_token = get_random_string(64)
+                user.email_verification_token = verification_token
+                user.email_verification_token_created_at = timezone.now()
+                user.save()
+
+            EmailManager.send_verification_email(user)
+
+            return Response(
+                {"message": "Please check your email for a new verification link"},
+                status=status.HTTP_200_OK,
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Invalid verification token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
 class RequestPasswordResetView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []

@@ -18,6 +18,39 @@ class PrintifyView(APIView):
             "Content-Type": "application/json",
         }
 
+    @staticmethod
+    def calculate_order_amount(cart, country, with_shipping=True):
+        total_amount = 0
+        for item in cart:
+            product = PrintifyView.get_product_internal(item["variant"]["product_id"])
+
+            if not product:
+                raise Exception("Product not found")
+
+            variant = next(
+                (v for v in product["variants"] if v["id"] == item["variant"]["id"]),
+                None,
+            )
+
+            if not variant:
+                raise Exception("Variant not found")
+
+            if not variant["is_available"]:
+                raise Exception("Variant not available")
+
+            total_amount += variant["price"] * item["quantity"]
+
+        if with_shipping:
+            shipping_cost = ShippingCostView.get_shipping_cost(country)
+            if shipping_cost is None:
+                raise Exception("Shipping cost not found")
+
+            if total_amount > shipping_cost["threshold"]:
+                shipping_cost["shipping_cost"] = 0
+
+            return total_amount + shipping_cost["shipping_cost"]
+        return total_amount
+
     def process_product(self, printifyProduct, image_service):
         product = {}
         product["id"] = printifyProduct.get("id")
@@ -124,8 +157,9 @@ class PrintifyView(APIView):
                 for variant in product["variants"]
                 if size["id"] == variant["options"][1]
             ]
-        ## testing, remove a variant_id from a size
+        ## TODO: remove, testing, remove a variant_id from a size
         product["sizes"][0]["variant_ids"].remove(product["variants"][0]["id"])
+        ##
         return product
 
     @staticmethod
@@ -137,7 +171,6 @@ class PrintifyView(APIView):
 
         if response.status_code == 200:
             data = response.json()
-            # If the response is a list, wrap it in a dictionary
             if isinstance(data, list):
                 return Response({"shops": data})
             return Response(data)
@@ -251,6 +284,7 @@ class ShippingCostView(APIView):
             return {"shipping_cost": 1195}
 
     def post(self, request):
+        cart = request.data.get("cart")
         country = request.data.get("country")
 
         if not country:
@@ -259,8 +293,15 @@ class ShippingCostView(APIView):
             )
 
         shipping_cost = self.get_shipping_cost(country)
+
         if shipping_cost:
+            order_amount = PrintifyView.calculate_order_amount(cart, None, with_shipping=False)
+
+            if order_amount > shipping_cost["threshold"]:
+                shipping_cost["shipping_cost"] = 0
+
             return Response(shipping_cost)
+
         return Response(
             {"error": "Invalid country"}, status=status.HTTP_400_BAD_REQUEST
         )
