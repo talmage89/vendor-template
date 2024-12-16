@@ -1,20 +1,24 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { ClothingModel, http, PrintifyProduct, PrintifyProductVariant } from "~/api";
+import { http, PrintifyProduct } from "~/api";
+import { useToast } from "~/hooks";
 import "./ProductList.scss";
+import { Spinner } from "~/components";
 
 export const ProductList = () => {
-  // const [clothing, setClothing] = React.useState<Clothing[]>([]);
-  const [printifyProducts, setPrintifyProducts] = React.useState<PrintifyProduct[]>([]);
-
   const navigate = useNavigate();
+  const toaster = useToast();
 
-  // React.useEffect(() => {
-  //   ClothingModel.list().then((clothing) => setClothing(clothing.data));
-  // }, []);
+  const [printifyProducts, setPrintifyProducts] = React.useState<PrintifyProduct[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    http.get("/api/fulfillment/products/").then((res) => setPrintifyProducts(res.data.data));
+    setIsLoading(true);
+    http
+      .get("/api/fulfillment/products/")
+      .then((res) => setPrintifyProducts(res.data.data))
+      .catch(() => toaster.error("Failed to load products. Please try again."))
+      .finally(() => setIsLoading(false));
   }, []);
 
   function renderProductCard(product: PrintifyProduct) {
@@ -25,8 +29,10 @@ export const ProductList = () => {
         onClick={() => navigate(`/products/${product.id}`)}
       >
         <h4>{product.title}</h4>
-        <img src={product.images[0]?.medium} alt={product.title} width={300} height={300} />
-        <div>
+        <div className="ProductList__card__image">
+          <img src={product.images[0]?.medium} alt={product.title} width={300} height={300} />
+        </div>
+        <div className="ProductList__card__images">
           {product.images
             .filter((image) => image.is_default)
             .map((image, index) => (
@@ -38,6 +44,16 @@ export const ProductList = () => {
   }
 
   return (
-    <div className="ProductList">{printifyProducts.map((item) => renderProductCard(item))}</div>
+    <div className="ProductList">
+      {isLoading ? (
+        <div className="ProductList__loading">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="ProductList__container">
+          {printifyProducts.map((item) => renderProductCard(item))}
+        </div>
+      )}
+    </div>
   );
 };

@@ -1,20 +1,61 @@
 @use "src/scss/variables" as *;
 
 .ProductList {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+
+  &__container {
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
 
   &__card {
-    width: 100%;
+    overflow: hidden;
+    height: fit-content;
     cursor: pointer;
-    &__image {
-      width: 100%;
+    border: 1px solid #eeeeee;
+    border-radius: 4px;
+    box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
 
+    &__image {
       & img {
         width: 100%;
         height: 100%;
         object-fit: cover;
+      }
+    }
+
+    &__images {
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      gap: 0.5rem;
+      align-self: flex-start;
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to left,
+          rgb(255, 255, 255),
+          rgba(0, 0, 0, 0) 20%,
+          rgba(0, 0, 0, 0)
+        );
       }
     }
   }

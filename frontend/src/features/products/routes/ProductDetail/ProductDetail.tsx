@@ -90,87 +90,90 @@ export const ProductDetail = () => {
 
   return (
     <div className="ProductDetail">
-      <div className="ProductDetail__image">
-        <img src={(selectedImage || product.images[0]).large} alt={product.title} />
-      </div>
-      <div className="ProductDetail__images">
-        {product.images.map((image, index) => (
-          <div
-            className={clsx("ProductDetail__images__image", {
-              "ProductDetail__images__image--selected": image.id === selectedImage?.id,
-              "ProductDetail__images__image--hidden": !imageValidForColor(image, selectedColor),
-            })}
-            key={index}
-            onClick={() => setSelectedImage(image)}
-          >
-            <img src={image.thumbnail} alt={product.title} width={100} height={100} />
-          </div>
-        ))}
-      </div>
-      <h2 className="ProductDetail__name">{product.title}</h2>
-      <h3 className="ProductDetail__price">{formatPrice(product.variants[0].price)}</h3>
-      <div className="ProductDetail__colors">
-        <h3>Colors</h3>
-        {product.colors.map((color) => (
-          <div
-            key={color.id}
-            className={clsx("ProductDetail__colors__color", {
-              "ProductDetail__colors__color--selected": color.id === selectedColor?.id,
-            })}
-            onClick={() => setSelectedColor(color)}
-          >
-            {color.title}
-          </div>
-        ))}
-      </div>
-      <div className="ProductDetail__sizes">
-        <h3>Sizes</h3>
-        {product.sizes.map((size) => (
-          <div
-            key={size.id}
-            className={clsx("ProductDetail__sizes__size", {
-              "ProductDetail__sizes__size--unavailable": !findVariant(selectedColor, size)
-                ?.is_available,
-              "ProductDetail__sizes__size--selected": size.id === selectedSize?.id,
-            })}
-            onClick={() => findVariant(selectedColor, size)?.is_available && setSelectedSize(size)}
-          >
-            {size.title}
-          </div>
-        ))}
-      </div>
-      <div className="ProductDetail__quantity">
-        <h3>Quantity</h3>
-        <div className="ProductDetail__quantity__input">
-          <button onClick={() => setQuantity(Math.max(0, quantity - 1))}>-</button>
-          <input
-            type="number"
-            placeholder="0"
-            min="0"
-            step="1"
-            max="999"
-            pattern="[0-9]*"
-            value={quantityDisplay}
-            onKeyDown={(e) => {
-              e.key === "-" && e.preventDefault();
-            }}
-            onChange={(e) => {
-              if (e.target.value === "") {
-                setQuantityDisplay("");
-                setQuantity(0);
-                return;
-              }
-              const value = Number(e.target.value);
-              const clampedValue = Math.max(0, Math.min(999, Math.floor(value)));
-              setQuantity(clampedValue);
-            }}
-          />
-          <button onClick={() => setQuantity(Math.min(999, quantity + 1))}>+</button>
+      <div className="ProductDetail__left">
+        <div className="ProductDetail__images">
+          {product.images.map((image, index) => (
+            <div
+              className={clsx("ProductDetail__images__image", {
+                "ProductDetail__images__image--selected": image.id === selectedImage?.id,
+                "ProductDetail__images__image--hidden": !imageValidForColor(image, selectedColor),
+              })}
+              key={index}
+              onClick={() => setSelectedImage(image)}
+            >
+              <img src={image.thumbnail} alt={product.title} width={100} height={100} />
+            </div>
+          ))}
+        </div>
+        <div className="ProductDetail__image">
+          <img src={(selectedImage || product.images[0]).large} alt={product.title} />
         </div>
       </div>
-      <button onClick={handleAddToCart} disabled={!selectedSize || !selectedColor || quantity <= 0}>
-        Add to Cart
-      </button>
+      <div className="ProductDetail__right">
+        <h2 className="ProductDetail__name">{product.title}</h2>
+        <h3 className="ProductDetail__price">{formatPrice(product.variants[0].price)}</h3>
+        <div className="ProductDetail__colors">
+          <div className="ProductDetail__colors__header">
+            <h4>Color:</h4>
+            <p>{selectedColor?.title}</p>
+          </div>
+          <div className="ProductDetail__colors__list">
+            {product.colors.map((color) => (
+              <div
+                key={color.id}
+                className={clsx("ProductDetail__colors__color", {
+                  "ProductDetail__colors__color--selected": color.id === selectedColor?.id,
+                })}
+                onClick={() => setSelectedColor(color)}
+              >
+                <div
+                  className="ProductDetail__colors__color__hex"
+                  style={{ backgroundColor: color.colors[0] || "#000000" }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="ProductDetail__sizes">
+          <h4>Size:</h4>
+          <div className="ProductDetail__sizes__list">
+            {product.sizes.map((size) => (
+              <div
+                key={size.id}
+                className={clsx("ProductDetail__sizes__size", {
+                  "ProductDetail__sizes__size--unavailable": !findVariant(selectedColor, size)
+                    ?.is_available,
+                  "ProductDetail__sizes__size--selected": size.id === selectedSize?.id,
+                })}
+                onClick={() =>
+                  findVariant(selectedColor, size)?.is_available && setSelectedSize(size)
+                }
+              >
+                {size.title}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="ProductDetail__add">
+          <div className="ProductDetail__add__quantity">
+            <h4 className="ProductDetail__info__header">Qty:</h4>
+            <select>
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((i) => (
+                <option key={i} value={i}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="ProductDetail__add__button"
+            onClick={handleAddToCart}
+            disabled={!selectedSize || !selectedColor || quantity <= 0}
+          >
+            Add to Cart
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
